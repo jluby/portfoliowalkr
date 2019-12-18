@@ -1,0 +1,18 @@
+Package: portfoliowalkr
+Version: 1.0
+Date: 2019-12-10
+Title: Characteristic-Matched Random Portfolio Creation
+Authors@R: c(person("Jack", "Luby", role = c("aut", "cre"),
+	       	 email = "jluby@college.harvard.edu"),
+	person("David", "Kane", role = c("aut", "cre"),
+		 email = "dave.kane@gmail.com"))
+Author: Jack Luby and David Kane
+Maintainer: Jack Luby <jluby@college.harvard.edu>
+Suggests: 
+    knitr,
+    rmarkdown
+Depends: grid, R (>= 3.1)
+Imports: ggplot2, walkr
+VignetteBuilder: knitr
+Description: A package that facilitates the creation of characteristic-matched random portfolios. The package samples benchmark portfolios using two methods: Dikin walk and hit-and-run. 
+License: MIT + file LICENSE

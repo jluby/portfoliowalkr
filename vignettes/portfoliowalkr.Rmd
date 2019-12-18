@@ -1,0 +1,35 @@
+---
+title: "Portfolio Performance Evaluation via Characteristic-Matched Random Portfolios"
+author: "Jack Luby"
+date: "11/20/2019"
+output: pdf_document
+geometry: margin=4.5cm
+abstract: "The portfoliowalkr package develops and implements a new measure of portfolio performance which compares the return of long-only, single currency equity portfolios to those of randomly generated characteristic-matching benchmarks. The set of portfolios which match the characteristics of a target is represented by the complete solution space to Ax = b and the N-simplex. In pinning allocation biases to zero and representing an exhaustive set of alternative portfolios, randomly sampling from this space provides a representative set of characteristic-controlled counterfactual investments. We propose that comparison against a large set of randomly generated, characteristic-matched counterfactual portfolios provides an accurate metric for a manager's true selection ability."
+bibliography: bibliography.bib
+---
+
+# 1 Introduction
+
+The assessment of a portfolio’s performance principally requires the establishment of a benchmark against which the portfolio can be compared. Typically, a portfolio is said to be successful if its return is greater than that of the benchmark. As such, the establishment of a fair and reasonable benchmark is important.
+	
+A benchmark serves to control for market movement beyond the manager’s control. Consider a portfolio which has returned 5% in the past year. Were this portfolio to exist in a universe where the average asset returned 25%, this portfolio’s performance would be considered abysmal. Conversely, were it to exist in a universe where the average asset lost 15%, its performance would be excellent. The orientation of a portfolio’s performance within its own universe is intuitively necessary. A manager should be judged on stock picking ability, not general market fluctuation.
+	
+This same intuition can be extended to benchmarks of greater nuance. Consider a mutual fund which, by mandate of its patriotic primary financier, invests only in American assets. Over the past year, this fund returned 10%. In that same period of time, American assets vastly underperformed booming international market growth of 25%, actually slipping by 5%. Should this fund’s manager be criticized for failing to match the international market’s growth, or lauded for managing 15% overperformance of the declining American market? Certainly the latter. In this case, the fund’s benchmark should not be the whole of the global asset universe. It should be limited to match the characteristics of the target portfolio.
+	
+Through mandates like the one described above or simply by chance, a portfolio is likely to be over or underexposed to some characteristics without an active manager decision. In these cases, a “pure stock-picker,” who claims to select assets without regard to their characteristics, should not be praised for, say, happening to be heavily exposed to thriving industrial assets. Nor should she be criticized for being underexposed to them. Unless a characteristic allocation has been actively selected and pre-declared, its exposure should be controlled for in all benchmarks. Portfolio performance should be considered on a basis relative to benchmarks which match on all passively allocated characteristics. 
+	
+The **portfoliowalkr** package develops and implements a new measure of portfolio performance which compares the return of long-only, single currency equity portfolios to those of randomly generated characteristic-matching benchmarks. The set of portfolios which match the characteristics of a target is represented by the complete solution space to Ax = b and the N-simplex. In pinning allocation biases to zero and representing an exhaustive set of alternative portfolios, randomly sampling from this space provides a true counterfactual to observed returns. We propose that comparison against a large set of randomly generated, characteristic-matched counterfactual portfolios provides an accurate metric for a manager's true selection ability. We will look to compare this metric to other characteristic-matching performance measurements and demonstrate the package's use.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
