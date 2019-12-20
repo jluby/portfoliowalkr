@@ -31,19 +31,22 @@
 #' @param ret.var is the name of the column containing percentage return over the time period
 #' @param points is the number of points we want to sample
 #' @param method is the MCMC sampling method. Please enter "hit-and-run" or "dikin"
+#' @param chains is the number of chains run
 #' @param thin every thin-th point is stored
 #' @param burn the first burn points are deleted
 #'        
-#' @return A matrix containing all of the points. Each column is a point sampled. 
+#' @return A list of objects for assessing portfolio performance. $plot returns a histogram of 
+#' random portfolio performances with target portfolio and universe performances demarcated for 
+#' comparison. $summary returns a numeric description of these performances. $frame returns the universe
+#' frame with matched weights attached. $returns is a frame containing each portfolios' 
+#' return, including one evenly weighted within the universe for comparison. $explore is a list
+#' of chains from the walkr output which can be input into the explore_walkr function to better
+#' understand the convergence of the model.
 #'   
 #' @examples
-#' ## 4D constraint
-#' A <- matrix(c(2,0,1,3), ncol = 4)
-#' b <- 0.5
-#' sampled_points <- walkr(A = A, b = b, points = 100, method = "dikin")       
-#' 
-#' @importFrom walkr walkr         
-#'                                                
+#' match_list <- portfoliowalkr(universe = jan, match = c('sector', 'growth', 'size'), points = 100, method = "dikin")       
+#' match_list$frame
+#'                                                                                              
 #' @export 
 #' 
 
@@ -53,30 +56,25 @@ portfoliowalkr <- function(universe,
                            ret.var = "return",
                            points = 1000, 
                            method = "dikin",
+                           chains = 1,
                            thin = 1,
                            burn = 0.5) {
   
-  # Make sure all matched variables are either numeric or a factor
-  for (i in match) {
-    if (class(pull(universe[i])) != "factor" & class(pull(universe[i])) != "numeric") {
-      stop("All match variables must be either factor or numeric")
-    }
-  }
-  
   # Make sure weights and return variables are numeric
   for (i in c(portfolio.weight, ret.var)) {
-    if (class(pull(universe[i])) != "numeric") {
+    if (class(universe[[i]]) != "numeric") {
       stop("portfolio.weight and return variables must be numeric")
     }
   }
   
-  # Make a check for things having values - If every one is the same then ignore and throw warning
+  # Make sure match variables are contained in the dataset
+  for (i in match) {
+    if (is.null(universe[i])) {
+      stop("All matching variables must be contained in the dataset")
+    }
+  }
   
-  # Make sure factors are unordered so that they can be one hot encoded
-  universe <- universe %>% 
-    mutate_if(is.factor, ~factor(.,ordered = FALSE))
-  
-  # Make sure weights are greater than 0
+  # Make sure weights are greater than 0, not a problem if they don't sum to 1
   if(sum(universe[portfolio.weight] < 0) > 0) {
     stop("Assets may only have zero or positive weight")
   }
@@ -88,13 +86,13 @@ portfoliowalkr <- function(universe,
   
   # portfolio.weight must be a column
   if(is.null(universe[portfolio.weight])) {
-    stop("portfolio.weight must be a provided column")
+    stop("portfolio.weight must be a column in the frame")
   }
   
   # If exposure is the min of any or max of any then remove from sample and figure out how to reattach
   # Create id for reattachment
   universe <- universe %>% 
-    mutate(id = row_number())
+    mutate(rowid = row_number())
   
   # For categorical, only keep if one of them has weight
   # For numeric, if mean value is at the edge of the distribution then 
@@ -102,8 +100,17 @@ portfoliowalkr <- function(universe,
   # Else this function does nothing
   small_set <- make_small(universe, match, portfolio.weight)
   
+  # Pull values from set for transposition (not really a necessary step)
   universe_small <- small_set$universe_small
   match <- small_set$match
+  
+  # Make sure all matched variables are either numeric or a factor
+  #TODO fix this so you can move it up
+  for (i in match) {
+    if (class(universe_small[[i]]) != "factor" & class(universe_small[[i]]) != "numeric") {
+      stop("All match variables must be either factor or numeric")
+    }
+  }
 
   # Transpose the `match` columns, for matching against b
   A <- transpose_a(universe_small, match)
@@ -111,16 +118,49 @@ portfoliowalkr <- function(universe,
   # Create characteristic stats to which we match our benchmarks
   b <- transpose_b(universe_small, match, portfolio.weight)
   
-  weights <- walkr(A = A, b = b, points = points, method = method, thin = thin, burn = burn)
+  # Run walkr to get random weights from the space of characteristic matches
+  chain_list <- walkr(A = A, b = b, points = points, method = method, chains = chains, thin = thin, burn = burn, ret.format = "list")
   
+  weights <- as.data.frame(chain_list)
+  
+  # Make sure the colnames are going to be easily interpretable later
+  for (i in 1:ncol(weights)) {
+    colnames(weights)[i] <- paste0("V", i)
+  }
+  
+  # Bind weights to the small universe, will always be in the same order
+  # Select from id's to last weight
   weighted_small <- bind_cols(universe_small, as.data.frame(weights)) %>% 
     select((length(universe)):(length(universe)+points))
   
-  weighted_universe <- left_join(universe, weighted_small, by = "id") %>%
-    mutate_at(vars((length(universe)+1):(length(universe)+points)), ~replace_na(.,0)) %>% 
-    select(-id)
+  # Attach weights, by id, to the universe of stocks.
+  weighted_universe <- left_join(universe, weighted_small, by = "rowid") %>%
+    
+    # Fill any NAs left over with 0's because if unfilled that means their weight should be 0
+    # Return weights in same relative size as that provided by user
+    mutate_at(vars((length(universe)+1):(length(universe)+points)), 
+              ~replace_na(.,0) * sum(universe[portfolio.weight])) %>% 
+    
+    # Rename weight columns for cleanliness
+    rename_at(vars((length(universe)+1):(length(universe)+points)), 
+              ~str_replace(., "V", "weight"))  %>% 
+    
+    # Select out rowid
+    select(-rowid)
   
-  return(weighted_universe)
+  # Calculate returns of each portfolio for plotting and summary
+  returns <- calc_returns(weighted_universe, universe, portfolio.weight, ret.var, points)
+  
+  # Make histogram of returns
+  plot <- plot_return_distribution(returns, points)
+  
+  # Create list of summary statistics
+  summary <- performance_summary(returns, points)
+  
+  # Save list of outputs
+  full_list <- list('plot' = plot, 'summary' = summary, 'frame' = weighted_universe, 'returns' = returns, 'explore' = chain_list)
+  
+  return(full_list)
 }
 
-# Add a check that a given sample gets the same exposures
+# Tests?

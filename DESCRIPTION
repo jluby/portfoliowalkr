@@ -11,8 +11,9 @@ Maintainer: Jack Luby <jluby@college.harvard.edu>
 Suggests: 
     knitr,
     rmarkdown
-Depends: grid, R (>= 3.1)
-Imports: ggplot2, walkr
+Depends: walkr, grid, tidyverse, R (>= 3.1)
+Imports: ggplot2, mltools, data.table
 VignetteBuilder: knitr
 Description: A package that facilitates the creation of characteristic-matched random portfolios. The package samples benchmark portfolios using two methods: Dikin walk and hit-and-run. 
 License: MIT + file LICENSE
+RoxygenNote: 6.1.1
