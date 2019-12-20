@@ -20,6 +20,10 @@
 
 check_exposures <- function(weighted_universe, match, portfolio.weight, n) {
   
+  if (length(n) != 1) {
+    stop("Please enter an `n` parameter (this can be 0)")
+  }
+  
   exposures <- weighted_universe %>% 
     mutate_if(is.factor, ~factor(.x, ordered = FALSE)) %>% 
     select(match, portfolio.weight) %>%
@@ -33,6 +37,10 @@ check_exposures <- function(weighted_universe, match, portfolio.weight, n) {
     set_names(portfolio.weight)
   
   points <- length(grep(x = colnames(weighted_universe), pattern = "weight[0-9]"))
+  
+  if (n != 0 & points == 0) {
+    stop("Please make sure portfolio weight columns are titled `weight...`")
+  }
   
   names <- row.names(exposures)
 
