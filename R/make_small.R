@@ -26,7 +26,10 @@
 
 make_small <- function(universe, match, portfolio.weight) {
   
-  universe_small <- universe
+  # Make ordered factors unordered for one_hot encoding later
+  # and to prevent some strange behavior along the way
+  universe_small <- universe %>%
+    mutate_if(is.factor, ~factor(.,ordered = FALSE))
   
   # Establish weights as a percentage of the total
   universe_small[[portfolio.weight]] <- universe_small[[portfolio.weight]] / sum(universe_small[[portfolio.weight]])
@@ -87,8 +90,7 @@ make_small <- function(universe, match, portfolio.weight) {
     }
   }
   
-  # Make ordered factors unordered for one_hot encoding later
-  # and to prevent some strange behavior along the way
+  # Redo this to get rid of unwanted levels
   universe_small <- universe_small %>%
     mutate_if(is.factor, ~factor(.,ordered = FALSE))
   
