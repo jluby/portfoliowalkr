@@ -114,10 +114,10 @@ portfoliowalkr <- function(universe,
 
   # Transpose the `match` columns, for matching against b
   A <- transpose_a(universe_small, match)
-  
+
   # Create characteristic stats to which we match our benchmarks
   b <- transpose_b(universe_small, match, portfolio.weight)
-  
+
   # Run walkr to get random weights from the space of characteristic matches
   chain_list <- walkr(A = A, b = b, points = points, method = method, chains = chains, thin = thin, burn = burn, ret.format = "list")
   

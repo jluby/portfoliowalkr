@@ -26,10 +26,7 @@
 
 make_small <- function(universe, match, portfolio.weight) {
   
-  # Make ordered factors unordered for one_hot encoding later
-  # and to prevent some strange behavior along the way
-  universe_small <- universe %>%
-    mutate_if(is.factor, ~factor(.,ordered = FALSE))
+  universe_small <- universe
   
   # Establish weights as a percentage of the total
   universe_small[[portfolio.weight]] <- universe_small[[portfolio.weight]] / sum(universe_small[[portfolio.weight]])
@@ -53,12 +50,12 @@ make_small <- function(universe, match, portfolio.weight) {
          unique() %>% 
          pull() %>% 
          as.character()
-       
+
        # Only keep assets whose category (ie. sector) is represented in target
        # Otherwise that asset's weight must be zero
        universe_small <- universe_small %>% 
          filter(!!as.name(i) %in% keep_list)
-       
+
     } else {
       # Any numeric variable whose exposure sits on the edge of its own distribution
       # can only be considered in terms of those edge cases. All others can be
@@ -89,6 +86,11 @@ make_small <- function(universe, match, portfolio.weight) {
       }
     }
   }
+  
+  # Make ordered factors unordered for one_hot encoding later
+  # and to prevent some strange behavior along the way
+  universe_small <- universe_small %>%
+    mutate_if(is.factor, ~factor(.,ordered = FALSE))
   
   # Establish new universe_small and list of matching variables for later
   small_set <- list("universe_small" = universe_small, "match" = match)

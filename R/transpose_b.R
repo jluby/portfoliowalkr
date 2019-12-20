@@ -22,7 +22,7 @@
 
 transpose_b <- function(universe_small, match, portfolio.weight) {
   
-  b <- universe_small %>% 
+  b <- universe_small %>%  
     
     # Select matching variables
     select(match, portfolio.weight) %>% 
@@ -39,7 +39,6 @@ transpose_b <- function(universe_small, match, portfolio.weight) {
     
     # Transpose for walkr calculations
     t()
-  
   return(b)
   
 }

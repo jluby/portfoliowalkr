@@ -18,7 +18,7 @@
 
 transpose_a <- function(universe_small, match) {
   
-  A <- universe_small %>%
+  A <- universe_small %>% 
     
     # Select only the variables on which we want to match
     select(match) %>%
