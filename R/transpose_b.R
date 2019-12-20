@@ -39,7 +39,6 @@ transpose_b <- function(universe_small, match, portfolio.weight) {
     
     # Transpose for walkr calculations
     t()
-  print(b)
   
   return(b)
   

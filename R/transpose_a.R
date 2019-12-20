@@ -29,7 +29,6 @@ transpose_a <- function(universe_small, match) {
     
     # Transpose for use in walkr
     t()
-  print(A)
   
   return(A)
 }
