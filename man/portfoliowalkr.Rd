@@ -39,15 +39,17 @@ understand the convergence of the model.
 \description{
 Given an asset universe \eqn{A} and a vector of baseline weights with 
 which to calculate target portfolio characteristics \eqn{b}, 
-\code{walkrportfolio} samples points from the intersection of 
+\code{portfoliowalkr} samples points from the intersection of 
 \eqn{Ax = b} with the n-simplex (\eqn{\sum x = 1}, \eqn{x_i \ge 0}).
 }
 \details{
-\code{walkrportfolio}, per its namesake, makes use of the \code{walkr}
+\code{portfoliowalkr}, per its namesake, makes use of the \code{walkr}
 package to sample randomly from the space of characteristic-matched
-portfolios. \code{walkrportfolio} returns \code{points} vectors of
+portfolios. \code{portfoliowalkr} returns \code{points} vectors of
 weights, which when applied to the universe A yields a portfolio with
 the same characteristics as the target.
+
+Per walkr:
 
 1) Hit-and-run is computationally less expensive and also 
 guarantees uniformity asympotically with complexity of O(n^3)
