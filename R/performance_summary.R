@@ -27,8 +27,8 @@ performance_summary <- function(returns, points) {
   names(target_weight) <- c("Return", "Percentile Rank")
 
   # Save list
-  summary <- list("Target" = even_weight,
-       "Universe" = target_weight,
+  summary <- list("Target" = target_weight,
+       "Universe" = even_weight,
        "Quantiles" = quantile(random_returns))
     
   

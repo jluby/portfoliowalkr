@@ -24,6 +24,10 @@ check_exposures <- function(weighted_universe, match, portfolio.weight, n) {
     stop("Please enter an `n` parameter (this can be 0)")
   }
   
+  if (n < 0) {
+    stop("n must be a non-negative integer")
+  }
+  
   exposures <- weighted_universe %>% 
     mutate_if(is.factor, ~factor(.x, ordered = FALSE)) %>% 
     select(match, portfolio.weight) %>%

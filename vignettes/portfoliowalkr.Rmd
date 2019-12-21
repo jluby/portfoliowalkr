@@ -4,7 +4,7 @@ author: "Jack Luby"
 date: "11/20/2019"
 output: pdf_document
 geometry: margin=4.5cm
-abstract: "The portfoliowalkr package develops and implements a new measure of portfolio performance which compares the return of long-only, single currency equity portfolios to those of randomly generated characteristic-matching benchmarks. The set of portfolios which match the characteristics of a target is represented by the complete solution space to Ax = b and the N-simplex. In pinning allocation biases to zero and representing an exhaustive set of alternative portfolios, randomly sampling from this space provides a representative set of characteristic-controlled counterfactual investments. We propose that comparison against a large set of randomly generated, characteristic-matched counterfactual portfolios provides an accurate metric for a manager's true selection ability."
+abstract: "The portfoliowalkr package develops and implements a new benchmark construction methodology which allows for the comparison of long-only, single currency equity portfolios to randomly generated characteristic-matching benchmarks. The set of portfolios which match the characteristics of a target is represented by the complete solution space to Ax = b and the N-simplex. In representing an exhaustive set of alternative portfolios which have no allocation bias, randomly sampling from this space provides a fair counterfactual set of investments. We propose that comparison against a large set of randomly generated, characteristic-matched counterfactual benchmarks provides an accurate metric for a manager's selection ability."
 bibliography: bibliography.bib
 ---
 
@@ -12,19 +12,212 @@ bibliography: bibliography.bib
 
 The assessment of a portfolio’s performance principally requires the establishment of a benchmark against which the portfolio can be compared. Typically, a portfolio is said to be successful if its return is greater than that of the benchmark. As such, the establishment of a fair and reasonable benchmark is important.
 	
-A benchmark serves to control for market movement beyond the manager’s control. Consider a portfolio which has returned 5% in the past year. Were this portfolio to exist in a universe where the average asset returned 25%, this portfolio’s performance would be considered abysmal. Conversely, were it to exist in a universe where the average asset lost 15%, its performance would be excellent. The orientation of a portfolio’s performance within its own universe is intuitively necessary. A manager should be judged on stock picking ability, not general market fluctuation.
-	
-This same intuition can be extended to benchmarks of greater nuance. Consider a mutual fund which, by mandate of its patriotic primary financier, invests only in American assets. Over the past year, this fund returned 10%. In that same period of time, American assets vastly underperformed booming international market growth of 25%, actually slipping by 5%. Should this fund’s manager be criticized for failing to match the international market’s growth, or lauded for managing 15% overperformance of the declining American market? Certainly the latter. In this case, the fund’s benchmark should not be the whole of the global asset universe. It should be limited to match the characteristics of the target portfolio.
-	
-Through mandates like the one described above or simply by chance, a portfolio is likely to be over or underexposed to some characteristics without an active manager decision. In these cases, a “pure stock-picker,” who claims to select assets without regard to their characteristics, should not be praised for, say, happening to be heavily exposed to thriving industrial assets. Nor should she be criticized for being underexposed to them. Unless a characteristic allocation has been actively selected and pre-declared, its exposure should be controlled for in all benchmarks. Portfolio performance should be considered on a basis relative to benchmarks which match on all passively allocated characteristics. 
-	
-The **portfoliowalkr** package develops and implements a new measure of portfolio performance which compares the return of long-only, single currency equity portfolios to those of randomly generated characteristic-matching benchmarks. The set of portfolios which match the characteristics of a target is represented by the complete solution space to Ax = b and the N-simplex. In pinning allocation biases to zero and representing an exhaustive set of alternative portfolios, randomly sampling from this space provides a true counterfactual to observed returns. We propose that comparison against a large set of randomly generated, characteristic-matched counterfactual portfolios provides an accurate metric for a manager's true selection ability. We will look to compare this metric to other characteristic-matching performance measurements and demonstrate the package's use.
+A benchmark serves to control for market movement beyond the manager’s control. Consider a portfolio which has returned 5% in the past year. Were this portfolio to exist in a universe where the average asset returned 25%, this portfolio’s performance would be considered abysmal. Conversely, were it to exist in a universe where the average asset lost 15%, its performance would be excellent. The orientation of a portfolio’s performance within its own universe is intuitively necessary. A manager should be judged on stock selection ability, not general market fluctuation.
+
+This intuition can be extended to benchmarks of greater nuance. Consider a mutual fund which, by mandate of its patriotic primary financier, invests only in American assets. Over the past year, this fund returned 10%. In that same period of time, American assets vastly underperformed booming international market growth of 25%, actually slipping by 5%. Should this fund’s manager be criticized for failing to match the international market’s growth, or lauded for managing 15% overperformance of the declining American market? Certainly the latter. In this case, the fund’s benchmark should not be the whole of the global asset universe. It should be limited to match the characteristics of their portfolio.
+
+This phenomenon applies yet more generally. A "stock-picking" manager only claims to be advantaged in their ability to pick superior stocks from a set of apparently similar ones. These managers should not be praised for, say, happening to be heavily exposed to successful industrial assets. Nor should they be criticized for being underexposed to them. Unless an advantage beyond stock-picking has been claimed and pre-declared, a portfolio's characteristic exposures should not advtantage or disadvatage the portfolio relative to a benchmark. Portfolio performance should be considered on a basis relative to benchmarks which control for passively allocated characteristics. Several approaches to performance assessment have sought to address this consideration, namely matching portfolio (MP) benchmark construction (@Kane2010) and regression-based performance attribution (@Lu2013).
+
+The **portfoliowalkr** package develops and implements a new benchmark construction methodology which allows for the comparison of long-only, single currency equity portfolios to randomly generated characteristic-matching benchmarks. The set of portfolios which match the characteristics of a target is represented by the complete solution space to Ax = b and the N-simplex. In representing an exhaustive set of alternative portfolios which have no allocation bias, randomly sampling from this space provides a fair counterfactual set of investments. We propose that comparison against a large set of randomly generated, characteristic-matched counterfactual benchmarks provides an accurate metric for a manager's selection ability. We will look to compare this metric to other characteristic-matching performance measurements and demonstrate the package's use.
+
+# 2 Matching Portfolios
+
+@Kane2010 develop a benchmark construction methodology which matches assets to near relatives on selected covariates. A nearest match, as defined by @rosenbaum propensity score, is found for each asset in the target portfolio. Following from the @rubin causal model, the authors propose that these matched assets serve as asset-level counterfactuals. Because the matching portfolio (MP) benchmark contains a near-identical non-holding for each holding, the target portfolio's excess return is attributable to the selection 'treatment.' Therefore, any difference in return between the portfolio and matched benchmark is attributable to the manager's stock-picking ability.
+
+The Rubin model makes use of propensity score matched units to directly control for covariates and their interactions in observational studies. Because each untreated observational unit has a highly similar treated match, any difference between the pair is attributable to treatment. Most commonly, propensity scoring is applied to characteristics such as age, race, gender, health status, and other simple attributes among a large pool of observational units. In these cases, a close match is readily available. Each unit either remains unweighted or is weighted relative to its demographic proportion of the population.
+
+Despite the robust implications of the Rubin causal model, it is not a perfect analog for the stock market. In benchmark creation applications, a close propensity score match may not be available due to the complexity of characteristics and limited size of the pool of assets. In these cases, attempting to match at the unit-level comes at the expense of bias. Placing a close but not-so-similar match into the benchmark portfolio creates significant susceptibility to bias, especially when a given unit weight is large (@Austin). Though the authors attempt to address the small sample / large weight concern with a bootstrapped sampling approach, iteratively creating new matched portfolios with next closest matches, this approach magnifies bias. As the matched units become less and less similar to the target, their applicability as comparison units becomes dubious. Bootstrapped matched sampling in this context is likely to sacrifice much of the interaction effect capturing power of propensity scoring and at the limit simply become a metric of performance relative to the universe.
+
+A final theoretical consideration lies in the weighting of MP units. Propensity scoring traditionally applies to a context in which a unit's weight is non-variable. In building a portfolio, the weight applied to a given security can range from 0%-100%. Imagine a portfolio which happens to have .1% of its weight allocated to each of the top 100 securities by return and 1% allocated to the next 90 top returners. With matched portfolio benchmarking, this portfolio would be considered to have done as well as physically possible. However, there is still a large sum of 'lost' returns which could have been claimed had the weights been better allocated. Being invested in the best possible assets does not mean one has created the best possible portfolio. Matching portfolio benchmark creations seem to fail to represent the whole of return opportunity. 
+
+# 3 Regression-Based Performance Attribution
+
+@Lu2013 make use of a linear regression approach to disentangle the extent to which a portfolio's excess return is attributable to allocation effects. This approach conceptualizes return as a linear function of various factors and their interactions. The extent to which a portfolio's assets' returns differ from their linear expectation is considered to be its excess return. 
+
+Though this approach sensibly looks to control for universe-wide return covariates, it is likely to put too much confidence in linear regression. A standard asset universe fails many of the assumptions of linear regression. First, a linear regression assumes a linear relationship. There is no guarantee of this relationship between a characteristic and returns (mid-sized company assets falter relative to large and small). Second, all observations are assumed to be independent of each other. Unless this has been prevented, many asset universes are likely to contain several securities from the same company, obscuring true effects. Finally, a linear regression ought to avoid extreme values which could suggest a relationship where there is none. In an asset universe, the boom or bust of a security on the edge of a characteristic distribution may harmfully obscure true relationships.
+
+Given that this approach conceptualizes excess return as residual from the linear fit, obscuring factors such as those described above are likely to significantly effect return estimates. Were a portfolio's assets evenly distributed throughout all characteristics, this approach might serve as an accurate metric for performance. However, this assumption is unlikely to be true for most portfolios, and its necessity would likely render the method's usefulness null.
+
+# 4 Characteristic-Matched Random Portfolios
+
+@burns2004 discusses vital issues in the widespread and widely accepted method of manager performance attribution using traditional benchmarks. His argument centers upon the volatility of individual benchmarks which are susceptible, even when well diversified, to the random swings of its most heavily weighted assets. Instead, he argues for the use of constrained random portfolios in measuring manger performance. A collection of random portfolios, when held under the same constraints as the portfolio manager, allows for an unbiased representation of a manager’s true stock-picking ability. These portfolios are selected with a neutral perspective to any measure of utility and are therefore serve as a much more meaningful representation of expected performance. Further, constrained random portfolios allow greater ability (a) for investor and fund manager alike to set flexible and individually preferred investment mandates and (b) to establish robust measures of alpha.
+
+We suggest a new method of benchmark creation, characteristic-matched random portfolios, which lends heavily from Burns's work and integrates constraints for passively allocated characteristics. Our method samples the space of all portfolios which exactly match the target portfolio's characteristics. As a result, this approach is able to directly explore a complete counterfactual set of investments, controlling for the effects of matched characteristics.
+
+This method's primary advantage, somewhat ironically given its computational demands, lies in its simplicity and interpretability. This method is not reliant on any of the assumptions of linear regression. Nor is it prone to the biases incurred by the unit-level matching of MPs. Instead, it is centered around the minimization of allocation biases. In essence, the establishment of the characteristic-matching space answers the question of "what returns could this manager have achieved given their passive exposures?" 
+
+# 4 Data
+
+We demonstrate the use of the **portfoliowalkr** package using data from the **pa** package (@Lu2013). This data comes from MSCI Barra’s Global Equity Model II (GEM2). The modified data pulled from **pa** contains three modified datasets (year, quarter, jan), containing 3,000 securities each. Because **portfoliowalkr** is currently limited to single-period analyses, the single-period jan dataset is of most use. 
+
+\hfill 
+
+```{r}
+data(jan)
+names(jan)
+```
+
+\hfill 
+
+Per **pa**, the characteristics contained in the dataset are as follows:
+
+\begin{itemize}
+
+\item barrid: security identifier by Barra.
+
+\item name: name of a security.
+
+\item return: monthly total return in trading currency.
+
+\item date: the starting date of the month to which the data belong.
+
+\item sector: consolidated sector categories based on the
+  GICS.\footnote{Global Industry Classification Standard}
+
+\item momentum: capture sustained relative performance.
+
+\item value: capture the extent to which a stock is priced
+  inexpensively in the market.
+
+\item size: differentiate between large and small cap companies.
+
+\item growth: capture stock's growth prospects.
+
+\item cap.usd: capitalization in model base currency USD.
+
+\item yield: dividend of a security.
+
+\item country: the country in which the company is traded.
+
+\item currency: currency of exposure.
+
+\item portfolio: top 200 securities based on \texttt{value} scores
+  in January are selected as portfolio holdings and are held through
+  December 2010. This is to avoid the complexity of trading in the
+  analyses.
+  
+\item benchmark: top 1000 securities based on size each month. The
+benchmark is cap-weighted.
+
+\end{itemize}
+
+A sample of the dataset is presented below with modified weights and selected columns. We will use this sampled dataset for a micro demonstration of **portfoliowalkr** functionality.
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(tidyverse)
+sample <- read_rds('analysis_sample.rds')
+```
+
+\hfill 
+
+```{r}
+sample
+```
+
+\hfill 
+
+To limit complexity, we will use this sample frame in our analysis. In this case, we have assigned 25% weighting to four securities, `DAIKIN INDUSTRIES`, `PGNIG`, `PHIL.LONG DIST.TEL.-PR`, and `QUALCOMM INC`. We would like to see how well this portfolio performs within the space of all possible portfolios which share its exposures. We load the **portfoliowalkr** library and sample 10,000 benchmarks which match our target portfolio's growth, size, and momentum. We will use the Dikin walk method (described in @walkr) with 10 chains to analyze convergence.
+
+\hfill 
+
+```{r, eval = FALSE}
+library(portfoliowalkr)
+
+walked <- portfoliowalkr(sample, 
+                         match = c('growth', 'size', 'momentum'), 
+                         portfolio.weight = "portfolio", 
+                         ret.var = "return", 
+                         points = 10000, 
+                         chains = 10, 
+                         method = 'dikin')
+```
+
+\hfill 
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+devtools::load_all()
+walked <- read_rds('walked.rds')
+```
+
+This function returns 5 outputs in a list. They are:
+
+\begin{itemize}
+
+\item \$plot: A histogram showing the distribution of returns of 
+characteristic-matched random portfolios. Visualizes the relative
+performance of the target portfolio and an evenly weighted baseline.
+
+\item \$summary: A list of summary statistics describing returns of the
+target and an evenly weighted baseline relative to the space of 
+characteristic-matches.
+
+\item \$frame: The initial `universe` frame input to the function, with
+characteristic-matching random portfolio weights attached. 
+length(universe) + points columns in width.
+
+\item \$returns: A dataframe containing the returns of each portfolio,
+including an evenly weighted baseline and the target.
+
+\item \$explore: The list of chains output from the walkr function. 
+Primarily useful for exploring MCMC random walk convergence
+
+\end{itemize}
 
 
+First, we can examine our base portfolio's exposures and randomly sample from our benchmarks to ensure that the characteristic matching has worked. 
 
+\hfill 
 
+```{r}
+check_exposures(walked$frame, 
+                match = c('growth', 'size', 'momentum'), 
+                portfolio.weight = "portfolio", 
+                n = 4)
+```
 
+\hfill 
 
+As desired, all portfolios match the characteristic exposures of the target portfolio.
+
+We make use of the `explore_walkr` function from **walkr** to analyze the convergence of the MCMC random walk. This function initializes a `shiny` interface from **shinystan** which contains metrics and visualizations to describe the walk's chain convergence. We run the function on the $explore output, which contains a list of the sampled chains.
+
+\hfill 
+
+```{r, eval = FALSE}
+explore_walkr(walked$explore)
+```
+
+\hfill 
+
+Because all \^R parameters are less than 1.1 (walkr would otherwise throw a warning), we can be confident that we have representatively sampled the space. 
+
+We can now assess the performance of our portfolio relative to the space of characteristic matches. 
+
+\hfill 
+
+```{r}
+walked$summary
+```
+
+```{r}
+walked$plot
+```
+
+\hfill 
+
+The target portfolio has underperformed an evenly weighted portfolio by `r scales::percent((-0.0577125) - (-0.035719))`. Given this sample baseline, one might conclude that the manager has done poorly. But the portfolio has apparently been disadvantaged by its characteristics. 99.9% of portfolios with these exposures underperform the evenly weighted benchmark. 
+
+In fact, controlling for the characteristics of the portfolio, our manager has performed their job as "stock-picker" well. Among the set of portfolios with these characteristics, the target portfolio performed better than 88.6%. The target portfolio outperformed the median random portfolio by `r scales::percent((-0.0577125) - (-0.08889656))`. 
+
+The portfolio analyzed herein was inherently disadvantaged relative to the universe by its passive characteristics. The manager does not claim to be advantaged in their ability to predict the performance of securities based on size, growth, or momentum. The manager claims to be talented in achieving excess returns beyond the macro movements of the market. Therefore, they should be assessed against the counterfactual space of benchmarks with their portfolio's exact exposures. The figures above demonstrate the necessity for dynamic benchmarking of manager performance. We believe that characteristic-matched random portfolios provide the most robust benchmark available.
+
+## Conclusion
+
+The **portfoliowalkr** package makes use of two Monte-Carlo Markov Chain (MCMC) algorithms, Dikin walk and hit-and-run, to sample from the space of portfolios which bear the same exposures as a target. In doing so, this package provides the tools to control for allocation biases and assess manager skill.
+
+The package is currently limited to single-period equity portfolio sampling across all available assets. Future improvements could be made by creating tools for multiple time periods or allowing users to specify a maximum number of assets in the benchmark.  These improvements are likely to improve the applicability of the package to real-world performance assessment.
+
+## Bibliography
 
 
 

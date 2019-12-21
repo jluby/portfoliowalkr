@@ -36,8 +36,8 @@ plot_return_distribution <- function(returns, points) {
     geom_vline(xintercept = target_return, linetype = "twodash") +
     
     # Add in labels for those lines, making sure that they are always visible on the plot by adjusting positions relative to location
-    annotate(geom = 'text', label = paste("Evenly Weighted Portfolio Return:", round(even_weight_return, 4)), x = even_weight_return, y = Inf, hjust = ifelse(even_weight_return < (.75*max(returns[['portfolio_return']])) + (.25*min(returns[['portfolio_return']])), -.02, 1.02), vjust = 1.5, size = 3) +
-    annotate(geom = 'text', label = paste("Target Portfolio Return:", round(target_return, 4)), x = target_return, y = Inf, hjust = ifelse(target_return < (.75*max(returns[['portfolio_return']])) + (.25*min(returns[['portfolio_return']])), -.02, 1.03), vjust = 3, size = 3)
+    annotate(geom = 'text', label = paste("Evenly Weighted Portfolio Return:", round(even_weight_return, 4)), x = even_weight_return, y = Inf, hjust = ifelse(even_weight_return < (.65*max(returns[['portfolio_return']])) + (.35*min(returns[['portfolio_return']])), -.02, 1.02), vjust = 1.5, size = 3) +
+    annotate(geom = 'text', label = paste("Target Portfolio Return:", round(target_return, 4)), x = target_return, y = Inf, hjust = ifelse(target_return < (.65*max(returns[['portfolio_return']])) + (.35*min(returns[['portfolio_return']])), -.02, 1.03), vjust = 3, size = 3)
   
   return(plot)
   
