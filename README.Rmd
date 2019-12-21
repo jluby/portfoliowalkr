@@ -1,0 +1,9 @@
+---
+title: "Characteristic-Matched Random Benchmarks for Equity Portfolios"
+author: "Jack Luby"
+output: html_document
+---
+
+Portfoliowalkr is an r package which facilitates the creation of matched portfolios. Following the ideas of Burns (2004) with additional contraints for passive characteristic allocations, we propose that randomly sampling from the space of characteristic-matching portfolios yields an accurate measure of manager stock-picking ability.
+
+This package serves as a wrapper for the walkr function, randomly sampling the non-negative convex polytope represented by the complete solution space to Ax = b and the N-simplex. In pinning allocation biases to zero and representing an exhaustive set of alternative portfolios, sampling from this space provides a representative set of characteristic-controlled counterfactual investments. These characteristic-matched random portfolios serve as an accurate benchmark for portfolio performance assessment.

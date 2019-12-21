@@ -1,3 +1,0 @@
-Characteristic-Matched Random Portfolio Creation
-
-Portfoliowalkr is an r package which facilitates the creation of matched portfolios. It does so by exploring the non-convex polytope represented by the complete solution space to Ax = b and the N-simplex. In pinning allocation biases to zero and representing an exhaustive set of alternative portfolios, randomly sampling from this space provides a representative set of characteristic-controlled counterfactual investments. These characteristic-matched random portfolios serve as an accurate benchmark for portfolio performance assessment.
