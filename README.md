@@ -1,6 +1,6 @@
 ## Characteristic-Matched Random Benchmarks for Equity Portfolios
 
-Portfoliowalkr is an r package which facilitates the creation of characteristic-matched random portfolios (CRPs). Following the ideas of Burns (2004) with additional contraints for passive characteristic allocations, we propose that randomly sampling from the space of characteristic-matching portfolios provides the best metric of manager stock-picking ability when the all matched characteristics are categorical.
+Portfoliowalkr is an r package which facilitates the creation of characteristic-matched random portfolios (CRPs). Following the ideas of Burns (2004) with additional contraints for passive characteristic allocations, we propose that randomly sampling from the space of characteristic-matching portfolios provides the best metric of manager stock-picking ability when all matched characteristics are categorical.
 
 This package serves as a wrapper for the walkr function, randomly sampling the non-negative convex polytope represented by the complete solution space to Ax = b and the N-simplex. Because each portfolio in this space has no allocation bias, sampling from this set provides a representative set of characteristic-controlled counterfactual investments. These CRPs serve as a fair benchmark for portfolio performance assessment.
 
